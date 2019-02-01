@@ -27,7 +27,7 @@ class SimpleTest extends Specification {
 			patch.toString() == '[{"op":"replace","path":"/k2","value":"v3"}]'
 	}
 
-	def "Patch sub-object"(){
+	def "Patch: value to object"(){
 		when:
 			JsonNode source = toJson('{"k1":"v1","k2":"v2"}')
 			JsonNode target = toJson('{"k1":"v1","k2": {"inner": 1}}')
@@ -35,6 +35,16 @@ class SimpleTest extends Specification {
 			JsonNode patch = asJson(source, target)
 		then:
 			patch.toString() == '[{"op":"replace","path":"/k2","value":{"inner":1}}]'
+	}
+
+	def "Patch sub-object"(){
+		when:
+			JsonNode source = toJson('{"k1":"v1","k2": {"inner": 1}}}')
+			JsonNode target = toJson('{"k1":"v1","k2": {"inner": {"deeper-inner": 2} }}')
+
+			JsonNode patch = asJson(source, target)
+		then:
+			patch.toString() == '[{"op":"replace","path":"/k2/inner","value":{"deeper-inner":2}}]'
 	}
 
 	def "Simple create patch, apply patch"(){
