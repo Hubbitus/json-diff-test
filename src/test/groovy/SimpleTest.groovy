@@ -1,12 +1,9 @@
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flipkart.zjsonpatch.JsonDiff
-import com.flipkart.zjsonpatch.JsonPatch
 import spock.lang.Specification
 
 import static com.flipkart.zjsonpatch.JsonDiff.asJson
 import static com.flipkart.zjsonpatch.JsonPatch.apply
-
 
 /**
  * @author Pavel Alexeev.
