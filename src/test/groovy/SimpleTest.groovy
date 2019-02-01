@@ -19,42 +19,42 @@ class SimpleTest extends Specification {
 	def "Simple patch"(){
 		when:
 			// https://www.baeldung.com/jackson-json-to-jsonnode
-			JsonNode source = toJson('{"k1":"v1","k2":"v2"}')
-			JsonNode target = toJson('{"k1":"v1","k2":"v3"}')
+			JsonNode source = toJson '{"k1":"v1","k2":"v2"}'
+			JsonNode target = toJson '{"k1":"v1","k2":"v3"}'
 
 			JsonNode patch = asJson(source, target)
 		then:
-			patch.toString() == '[{"op":"replace","path":"/k2","value":"v3"}]'
+			patch as String == '[{"op":"replace","path":"/k2","value":"v3"}]'
 	}
 
 	def "Patch: value to object"(){
 		when:
-			JsonNode source = toJson('{"k1":"v1","k2":"v2"}')
-			JsonNode target = toJson('{"k1":"v1","k2": {"inner": 1}}')
+			JsonNode source = toJson '{"k1":"v1","k2":"v2"}'
+			JsonNode target = toJson '{"k1":"v1","k2": {"inner": 1}}'
 
 			JsonNode patch = asJson(source, target)
 		then:
-			patch.toString() == '[{"op":"replace","path":"/k2","value":{"inner":1}}]'
+			patch as String == '[{"op":"replace","path":"/k2","value":{"inner":1}}]'
 	}
 
 	def "Patch sub-object"(){
 		when:
-			JsonNode source = toJson('{"k1":"v1","k2": {"inner": 1}}}')
-			JsonNode target = toJson('{"k1":"v1","k2": {"inner": {"deeper-inner": 2} }}')
+			JsonNode source = toJson '{"k1":"v1","k2": {"inner": 1}}}'
+			JsonNode target = toJson '{"k1":"v1","k2": {"inner": {"deeper-inner": 2} }}'
 
 			JsonNode patch = asJson(source, target)
 		then:
-			patch.toString() == '[{"op":"replace","path":"/k2/inner","value":{"deeper-inner":2}}]'
+			patch as String == '[{"op":"replace","path":"/k2/inner","value":{"deeper-inner":2}}]'
 	}
 
 	def "Simple create patch, apply patch"(){
 		when:
-			JsonNode source = toJson('{"k1":"v1","k2":"v2"}')
-			JsonNode target = toJson('{"k1":"v1","k2": {"inner": 1}}')
+			JsonNode source = toJson '{"k1":"v1","k2":"v2"}'
+			JsonNode target = toJson '{"k1":"v1","k2": {"inner": 1}}'
 
 			JsonNode patch = asJson(source, target)
 		then:
-			patch.toString() == '[{"op":"replace","path":"/k2","value":{"inner":1}}]'
+			patch as String == '[{"op":"replace","path":"/k2","value":{"inner":1}}]'
 
 		when:
 			JsonNode targetRecreated = apply(patch, source)
@@ -65,11 +65,11 @@ class SimpleTest extends Specification {
 
 	def "Test create patch objects move"(){
 		when:
-			JsonNode source = toJson('{"k1":"v1","k2":"v2"}')
-			JsonNode target = toJson('{"k2":"v2","k1":"v1"}')
+			JsonNode source = toJson '{"k1":"v1","k2":"v2"}'
+			JsonNode target = toJson '{"k2":"v2","k1":"v1"}'
 
 			JsonNode patch = asJson(source, target)
 		then:
-			patch.toString() == '[]'
+			patch as String == '[]'
 	}
 }
