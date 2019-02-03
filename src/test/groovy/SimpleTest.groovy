@@ -1,7 +1,9 @@
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.flipkart.zjsonpatch.JsonPatchApplicationException
 import spock.lang.Specification
 
+import static com.flipkart.zjsonpatch.DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE
 import static com.flipkart.zjsonpatch.JsonDiff.asJson
 import static com.flipkart.zjsonpatch.JsonPatch.apply
 
@@ -47,7 +49,7 @@ class SimpleTest extends Specification {
 			patch as String == '[{"op":"replace","path":"/k2/inner","value":{"deeper-inner":2}}]'
 	}
 
-	def "Simple create patch, apply patch"(){
+	def "Simple create/apply patch"(){
 		when:
 			JsonNode source = toJson '{"k1":"v1","k2":"v2"}'
 			JsonNode target = toJson '{"k1":"v1","k2": {"inner": 1}}'
@@ -60,7 +62,18 @@ class SimpleTest extends Specification {
 			JsonNode targetRecreated = apply(patch, source)
 
 		then:
-			targetRecreated.toString() == '{"k1":"v1","k2":{"inner":1}}'
+			targetRecreated as String == '{"k1":"v1","k2":{"inner":1}}'
+	}
+
+	def "Error: Apply patch on non-existent node failed"(){
+		when:
+			JsonNode source = toJson '{"k1":"v1","k2":"v2"}'
+			JsonNode patch  = toJson '[{"op":"replace","path":"/k3","value":{"inner":1}}]'
+			apply(patch, source)
+
+		then:
+			JsonPatchApplicationException e = thrown(JsonPatchApplicationException)
+			e.message == '[REPLACE Operation] noSuchPath in source, path provided : //k3'
 	}
 
 	def "Test create patch objects move"(){
@@ -71,5 +84,23 @@ class SimpleTest extends Specification {
 			JsonNode patch = asJson(source, target)
 		then:
 			patch as String == '[]'
+	}
+
+	def "Test create patch with context, and fail on apply when original object changed"(){
+		when:
+			JsonNode source = toJson '{"k1":"v1","k2":"v2"}'
+			JsonNode target = toJson '{"k1":"v1","k2": {"inner": 1}}'
+
+			JsonNode patch = asJson(source, target, EnumSet.of(ADD_ORIGINAL_VALUE_ON_REPLACE))
+		then:
+			patch as String == '[{"op":"replace","fromValue":"v2","path":"/k2","value":{"inner":1}}]'
+
+		when:
+			source = toJson '{"k1":"v1","k2":"v3 changed"}' // Our external changes in source object (configuration in production by customer)
+			JsonNode targetRecreated = apply(patch, source)
+
+		then:
+//			JsonPatchApplicationException e = thrown(JsonPatchApplicationException) // I want exception there, but it succeed!
+			targetRecreated as String == '{"k1":"v1","k2":{"inner":1}}'
 	}
 }
