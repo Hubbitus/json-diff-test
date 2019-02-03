@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flipkart.zjsonpatch.JsonPatchApplicationException
+import spock.lang.Issue
 import spock.lang.Specification
 
 import static com.flipkart.zjsonpatch.DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE
@@ -86,6 +87,7 @@ class SimpleTest extends Specification {
 			patch as String == '[]'
 	}
 
+	@Issue("https://github.com/flipkart-incubator/zjsonpatch/issues/91")
 	def "Test create patch with context, and fail on apply when original object changed"(){
 		when:
 			JsonNode source = toJson '{"k1":"v1","k2":"v2"}'
@@ -100,7 +102,7 @@ class SimpleTest extends Specification {
 			JsonNode targetRecreated = apply(patch, source)
 
 		then:
-//			JsonPatchApplicationException e = thrown(JsonPatchApplicationException) // I want exception there, but it succeed!
+//			JsonPatchApplicationException e = thrown(JsonPatchApplicationException) // I want exception there, but it succeed! @see @bug https://github.com/flipkart-incubator/zjsonpatch/issues/91
 			targetRecreated as String == '{"k1":"v1","k2":{"inner":1}}'
 	}
 }
